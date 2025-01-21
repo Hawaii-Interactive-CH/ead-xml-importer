@@ -225,6 +225,10 @@ body.toplevel_page_ead-xml-importer button.button-primary:hover {
     box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px;
 }
 
+.exi-content--open {
+    display: block;
+}
+
 .exi-content .submit {
     padding: 0;
 }
@@ -401,4 +405,53 @@ body.toplevel_page_ead-xml-importer button.button-primary:hover {
 
 .exi-log-success {
     color: #00b894;
+}
+
+.wp-list-table th {
+    padding: 8px;
+}
+.wp-list-table td {
+    padding: 12px 8px;
+}
+.tablenav-pages {
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+.tablenav-pages .pagination {
+    display: inline-block;
+    padding-left: 0;
+    margin: 0 0 0 15px;
+}
+.tablenav-pages .pagination li {
+    margin: 0;
+}
+.tablenav-pages .pagination a,
+.tablenav-pages .pagination span {
+    padding: 4px 8px;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    margin: 0 2px;
+}
+.tablenav-pages .pagination .current {
+    background-color: #0073aa;
+    color: white;
+    border-color: #0073aa;
+}
+
+.page-numbers {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    align-items: center;
+    margin: 0;
+}
+
+.page-numbers li {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
 }

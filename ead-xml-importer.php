@@ -19,7 +19,7 @@ require 'utils/plugin-update-checker/plugin-update-checker.php';
 use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 $updateChecker = PucFactory::buildUpdateChecker(
-	'https://github.com/misits/ead-xml-importer',
+	'https://github.com/hawaii-dev/ead-xml-importer',
 	__FILE__,
 	'ead-xml-importer'
 );

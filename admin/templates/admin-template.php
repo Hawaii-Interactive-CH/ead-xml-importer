@@ -22,6 +22,7 @@ extract($data);
         // Include each section with proper scope
         require dirname(__FILE__) . '/sections/ead-settings.php';
         require dirname(__FILE__) . '/sections/ead-fetch.php';
+        require dirname(__FILE__) . '/sections/ead-missing.php';
 
         ?>
     </div>
