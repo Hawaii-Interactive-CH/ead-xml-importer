@@ -298,53 +298,56 @@ class DataLoader
         $periode = $this->prepareRepeater($this->getUnitdate());
         if (!empty($periode)) {
             if ($use_acf) {
-                // delete all rows
-                $current_rows = get_field('ead_periode', $post_id);
-                if (is_array($current_rows)) {
-                    foreach (array_keys($current_rows) as $index) {
-                        delete_row('ead_periode', $index + 1, $post_id);
-                    }
-                }
-                $periode = array_unique($periode, SORT_REGULAR);
-                foreach ($periode as $row) {
-                    add_row('ead_periode', $row, $post_id);
-                }
+                $this->updateACFRepeaterField('ead_periode', $periode, $post_id);
             } else {
                 delete_post_meta($post_id, 'ead_periode');
-                update_post_meta($post_id, 'ead_periode', $periode);
+                update_post_meta($post_id, 'ead_periode', array_values(array_unique($periode, SORT_REGULAR)));
             }
         }
 
         // For physdesc
         $physdesc = $this->getPhysdesc();
         if (!empty($physdesc)) {
-            $physdesc_data = [
+            $physdesc_data = array_filter([
                 [
                     'key' => 'phys',
-                    'value' => $physdesc['phys']
+                    'value' => $physdesc['phys'] ?? ''
                 ],
                 [
                     'key' => 'desc',
-                    'value' => $physdesc['desc']
+                    'value' => $physdesc['desc'] ?? ''
                 ]
-            ];
+            ], function($item) {
+                return !empty($item['value']);
+            });
 
             if ($use_acf) {
-                // delete all rows
-                $current_rows = get_field('ead_physdesc', $post_id);
-                if (is_array($current_rows)) {
-                    foreach (array_keys($current_rows) as $index) {
-                        delete_row('ead_physdesc', $index + 1, $post_id);
-                    }
-                }
-                $physdesc_data = array_unique($physdesc_data, SORT_REGULAR);
-                foreach ($physdesc_data as $row) {
-                    add_row('ead_physdesc', $row, $post_id);
-                }
+                $this->updateACFRepeaterField('ead_physdesc', $physdesc_data, $post_id);
             } else {
                 delete_post_meta($post_id, 'ead_physdesc');
                 update_post_meta($post_id, 'ead_physdesc', $physdesc_data);
             }
+        }
+    }
+
+    private function updateACFRepeaterField($field_name, $new_data, $post_id) {
+        // Delete existing rows
+        $current_rows = get_field($field_name, $post_id);
+        if (is_array($current_rows)) {
+            foreach (array_keys($current_rows) as $index) {
+                delete_row($field_name, $index + 1, $post_id);
+            }
+        }
+    
+        // Filter out empty values and duplicates
+        $filtered_data = array_filter($new_data, function($row) {
+            return !empty($row['value']);
+        });
+        $unique_data = array_values(array_unique($filtered_data, SORT_REGULAR));
+    
+        // Add new rows
+        foreach ($unique_data as $row) {
+            add_row($field_name, $row, $post_id);
         }
     }
 
