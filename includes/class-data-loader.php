@@ -272,28 +272,6 @@ class DataLoader
         }
 
 
-        // For langmaterial
-        $langmaterial = $this->prepareRepeater($this->getLangmaterial());
-        if (!empty($langmaterial)) {
-            if ($use_acf) {
-                // delete all rows
-                $current_rows = get_field('ead_langmaterial', $post_id);
-                if (is_array($current_rows)) {
-                    foreach (array_keys($current_rows) as $index) {
-                        delete_row('ead_langmaterial', $index + 1, $post_id);
-                    }
-                }
-                $langmaterial = array_unique($langmaterial, SORT_REGULAR);
-                foreach ($langmaterial as $row) {
-                    add_row('ead_langmaterial', $row, $post_id);
-                }
-            } else {
-                delete_post_meta($post_id, 'ead_langmaterial');
-                update_post_meta($post_id, 'ead_langmaterial', $langmaterial);
-            }
-        }
-
-
         // For periode (unitdate)
         $periode = $this->prepareRepeater($this->getUnitdate());
         if (!empty($periode)) {
@@ -301,7 +279,16 @@ class DataLoader
                 $this->updateACFRepeaterField('ead_periode', $periode, $post_id);
             } else {
                 delete_post_meta($post_id, 'ead_periode');
-                update_post_meta($post_id, 'ead_periode', array_values(array_unique($periode, SORT_REGULAR)));
+                // For non-ACF storage, filter unique values by value only
+                $unique_periode = [];
+                $seen = [];
+                foreach ($periode as $row) {
+                    if (!isset($seen[$row['value']])) {
+                        $seen[$row['value']] = true;
+                        $unique_periode[] = $row;
+                    }
+                }
+                update_post_meta($post_id, 'ead_periode', $unique_periode);
             }
         }
 
@@ -318,14 +305,24 @@ class DataLoader
                     'value' => $physdesc['desc'] ?? ''
                 ]
             ], function($item) {
-                return !empty($item['value']);
+                return !empty($item['value']) && $item['value'] !== '0.0';
             });
 
             if ($use_acf) {
                 $this->updateACFRepeaterField('ead_physdesc', $physdesc_data, $post_id);
             } else {
                 delete_post_meta($post_id, 'ead_physdesc');
-                update_post_meta($post_id, 'ead_physdesc', $physdesc_data);
+                // For non-ACF storage, filter unique values by key-value combination
+                $unique_physdesc = [];
+                $seen = [];
+                foreach ($physdesc_data as $row) {
+                    $signature = $row['key'] . '|' . $row['value'];
+                    if (!isset($seen[$signature])) {
+                        $seen[$signature] = true;
+                        $unique_physdesc[] = $row;
+                    }
+                }
+                update_post_meta($post_id, 'ead_physdesc', $unique_physdesc);
             }
         }
     }
@@ -334,18 +331,30 @@ class DataLoader
         // Delete existing rows
         $current_rows = get_field($field_name, $post_id);
         if (is_array($current_rows)) {
-            foreach (array_keys($current_rows) as $index) {
-                delete_row($field_name, $index + 1, $post_id);
-            }
+            delete_field($field_name, $post_id); // More efficient than deleting row by row
         }
-    
-        // Filter out empty values and duplicates
+        
+        // Filter out empty values
         $filtered_data = array_filter($new_data, function($row) {
             return !empty($row['value']);
         });
-        $unique_data = array_values(array_unique($filtered_data, SORT_REGULAR));
     
-        // Add new rows
+        // Create a map to detect duplicates based on key-value combinations
+        $seen = [];
+        $unique_data = [];
+        
+        foreach ($filtered_data as $row) {
+            $signature = $field_name === 'ead_physdesc' ? 
+                $row['key'] . '|' . $row['value'] :  // For physdesc, consider both key and value
+                $row['value'];                        // For other fields, just consider value
+                
+            if (!isset($seen[$signature])) {
+                $seen[$signature] = true;
+                $unique_data[] = $row;
+            }
+        }
+    
+        // Add unique rows
         foreach ($unique_data as $row) {
             add_row($field_name, $row, $post_id);
         }
