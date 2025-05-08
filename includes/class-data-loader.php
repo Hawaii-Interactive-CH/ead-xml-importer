@@ -201,13 +201,6 @@ class DataLoader
             if ($existing_post->have_posts()) {
                 $post_id = $existing_post->posts[0]->ID;
 
-                $post_id = wp_update_post(array(
-                    'ID' => $post_id,
-                    'post_slug' => $this->getEADslug(),
-                    'post_type' => $postType,
-                    'post_status' => 'publish',
-                ));
-
                 $this->updatePostMeta($post_id);
             }
         } else {
