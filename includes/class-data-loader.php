@@ -204,7 +204,6 @@ class DataLoader
                 $post_id = wp_update_post(array(
                     'ID' => $post_id,
                     'post_slug' => $this->getEADslug(),
-                    'post_title' => $this->getEADtitle(),
                     'post_type' => $postType,
                     'post_status' => 'publish',
                 ));
